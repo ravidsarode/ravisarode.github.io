@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://ravidsarode.github.io/sitemap.xml
