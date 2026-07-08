@@ -162,8 +162,36 @@ window.addEventListener('scroll', () => {
 // ============================================================
 const contactForm = document.getElementById('contactForm');
 const formNote = document.getElementById('formNote');
+const submitBtn = contactForm ? contactForm.querySelector('button[type="submit"]') : null;
 if (contactForm){
-  contactForm.addEventListener('submit', () => {
-    formNote.textContent = '// your email client should open now — thanks for reaching out';
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!formNote || !submitBtn) return;
+
+    const originalBtn = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Sending…</span>';
+    formNote.textContent = '// sending your message…';
+
+    try {
+      const res = await fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        formNote.textContent = '// message sent — thanks for reaching out, I\'ll reply soon';
+        contactForm.reset();
+      } else {
+        formNote.textContent = '// something went wrong — please email me directly at ravidsarode@gmail.com';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtn;
+      }
+    } catch (err) {
+      formNote.textContent = '// network error — please email me directly at ravidsarode@gmail.com';
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtn;
+    }
   });
 }
