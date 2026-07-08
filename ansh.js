@@ -18,7 +18,7 @@
   const widget = document.createElement('div');
   widget.id = 'anshWidget';
   widget.innerHTML = `
-    <button class="ansh-fab" id="anshFab" type="button" aria-label="Open Ansh chatbot" aria-expanded="false" aria-controls="anshPanel">
+    <button class="ansh-fab is-open" id="anshFab" type="button" aria-label="Close Ansh chatbot" aria-expanded="true" aria-controls="anshPanel">
       <svg class="ansh-fab__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 6.5C4 5.12 5.12 4 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4 3v-3H6.5A2.5 2.5 0 0 1 4 14.5v-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
         <circle cx="9"  cy="10.5" r="1" fill="currentColor"/>
@@ -30,7 +30,7 @@
       </svg>
     </button>
 
-    <section class="ansh-panel" id="anshPanel" role="dialog" aria-label="Ansh chatbot" aria-hidden="true">
+  <section class="ansh-panel is-open" id="anshPanel" role="dialog" aria-label="Ansh chatbot" aria-hidden="false">
       <header class="ansh-panel__header">
         <div class="ansh-panel__avatar" aria-hidden="true">A</div>
         <div class="ansh-panel__title">
@@ -66,6 +66,13 @@
   `;
   document.body.appendChild(widget);
 
+  // Panel is open by default — greet the visitor once on first render
+  setTimeout(() => {
+    if (log.children.length === 0) {
+      addBot("Hi, I'm Ansh — Ravi's portfolio assistant. Ask me anything about his work, stack, or background.");
+    }
+  }, 250);
+
   const fab        = document.getElementById('anshFab');
   const panel      = document.getElementById('anshPanel');
   const closeBtn   = document.getElementById('anshClose');
@@ -76,7 +83,7 @@
   const sendBtn    = document.getElementById('anshSend');
 
   const messages = [];
-  let isOpen = false;
+  let isOpen = true;
   let busy = false;
 
   function open() {
