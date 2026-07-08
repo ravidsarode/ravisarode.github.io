@@ -1,0 +1,9 @@
+{
+  "name": "ravi-sarode-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static portfolio site with Ansh chatbot (Vercel serverless function for /api/ansh).",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -27,8 +27,12 @@ works with every day (Grafana panels, service status dots, event pipelines):
 ```
 .
 ├── index.html              # all page content/markup
-├── styles.css               # design tokens + all styling
-├── script.js                 # reveal-on-scroll, typing effect, particles, nav
+├── styles.css               # design tokens + all styling (incl. Ansh widget)
+├── script.js                 # reveal-on-scroll, typing effect, particles, nav, contact form
+├── ansh.js                   # Ansh chatbot client (floating widget, fetch to /api/ansh)
+├── api/
+│   └── ansh.js              # Vercel serverless function — Groq proxy + system prompt
+├── package.json              # tells Vercel this is a Node project
 ├── robots.txt
 ├── sitemap.xml
 ├── assets/
@@ -69,31 +73,40 @@ npx serve .
 
 Then open `http://localhost:8000`.
 
-## Deploying to GitHub Pages
+**Heads up:** the Ansh chatbot (bottom-right floating button) only works in
+environments that can serve `/api/ansh` — i.e. on Vercel. Locally you can
+preview the UI but the bot will show an "offline" message. To test the
+function locally, run `npx vercel dev` (requires a free Vercel account and
+`GROQ_API_KEY` set in `.env.local` — see [Set up Ansh](#set-up-ansh) below).
 
-1. Create a new GitHub repository (for a user/organization site, name it
-   exactly `<your-username>.github.io`; for a project site, any name works).
-2. Push this folder's contents to the repository root:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial portfolio"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/<your-repo>.git
-   git push -u origin main
-   ```
-3. In the repository, go to **Settings → Pages**.
-4. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-5. Select branch `main` and folder `/ (root)`, then **Save**.
-6. GitHub will publish the site at:
-   - `https://<your-username>.github.io` (if the repo is named
-     `<your-username>.github.io`), or
-   - `https://<your-username>.github.io/<your-repo>` (for a project repo).
-7. Update `index.html`'s `<link rel="canonical">`, the Open Graph `og:url`,
-   and `sitemap.xml` / `robots.txt` with your final published URL.
+## Deploying to Vercel (recommended — required for Ansh)
 
-No further configuration, backend, or environment variables are needed — the
-whole site is static.
+GitHub Pages can still host the static files, but the chatbot needs a
+serverless function, so the cleanest path is to deploy the whole site to
+[Vercel](https://vercel.com) — it's free for personal sites and one repo
+becomes one deploy.
+
+1. Push this folder to a GitHub repository.
+2. Go to [vercel.com/new](https://vercel.com/new) and import the repository.
+3. Leave the framework preset as **Other**. Vercel auto-detects
+   `api/ansh.js` as a serverless function.
+4. Click **Deploy**. Your site is live at `https://<project-name>.vercel.app`.
+5. (Optional) Add a custom domain in **Settings → Domains**.
+
+To redeploy after edits, just `git push` — Vercel rebuilds automatically.
+
+## Deploying to GitHub Pages (no chatbot)
+
+If you want to keep GitHub Pages and skip the chatbot, either:
+
+- Delete `ansh.js`, the `<script src="ansh.js">` line in `index.html`, and
+  the `api/` folder before pushing — the site works as a pure static page.
+- Or keep them all; Ansh will just show an "offline" fallback message when
+  it can't reach `/api/ansh`. The rest of the site is unaffected.
+
+Follow the original GitHub Pages steps in
+[this commit's README](https://github.com/ravidsarode/ravidsarode.github.io)
+if you go that route.
 
 ## Performance & accessibility
 
@@ -111,7 +124,40 @@ whole site is static.
   top of `styles.css` under `:root`.
 - **Content** — edit directly in `index.html`; sections are clearly labelled
   with HTML comments (`<!-- ============ SECTION ============ -->`).
-- **Contact form** — currently submits via `mailto:`, which opens the
-  visitor's email client (no backend). To capture submissions server-side,
-  swap the form's `action`/`method` for a form backend (e.g. Formspree,
-  Getform) or a custom API endpoint.
+- **Contact form** — submits via [FormSubmit](https://formsubmit.co) directly
+  to `ravidsarode@gmail.com` (no backend needed). On first submission
+  FormSubmit sends an activation email — click the link once and you're set.
+- **Ansh chatbot knowledge** — edit the `ANSH_SYSTEM_PROMPT` constant at the
+  top of `api/ansh.js`. Anytime you update the résumé or want Ansh to know
+  about a new project, change the system prompt and redeploy.
+
+## Set up Ansh
+
+Ansh is a small chatbot floating in the bottom-right of the site. It can
+answer questions about your work, stack, current role, and background. It
+runs on [Groq](https://console.groq.com)'s free tier (very fast, very
+cheap — well within portfolio traffic).
+
+**One-time setup:**
+
+1. Sign up at [console.groq.com](https://console.groq.com) (free).
+2. **API Keys → Create new key** → copy it.
+3. In Vercel, go to your project → **Settings → Environment Variables**.
+4. Add:
+   - **Name:** `GROQ_API_KEY`
+   - **Value:** `<paste the key>`
+   - **Environments:** Production, Preview, Development (all three).
+5. **Deployments → ⋯ → Redeploy** (env vars only apply to new deploys).
+6. Open the live site, click the cyan Ansh button bottom-right, and ask
+   "Where do you work?" — you should get a real answer.
+
+**Local testing** (optional):
+
+```bash
+# In the project root
+echo "GROQ_API_KEY=<your_key>" > .env.local
+npx vercel dev
+```
+
+The site runs on `http://localhost:3000` with `/api/ansh` working. The key
+in `.env.local` is gitignored automatically by Vercel.
